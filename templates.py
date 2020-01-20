@@ -1,17 +1,16 @@
-def generate_manifest(path, package, targetPackage, label):
-    manifest = f'''<?xml version="1.0" encoding="utf-8" standalone="no"?>
+# Generates AndroidManifest.xml with overlay for targeted package 
+def generate_manifest(package, targetPackage, label):
+    return f'''<?xml version="1.0" encoding="utf-8" standalone="no"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android" package="{package}">
     <overlay android:isStatic="true" android:priority="0" android:targetPackage="{targetPackage}"/>
     <application android:label="{label}" />
 </manifest>
 '''
-    
-    with open(path, "w") as manifest_file:
-        manifest_file.write(manifest)
 
 
-def generate_gradle(path, package):
-    gradle = f'''apply plugin: \'com.android.application\'
+# Generates basic build.gradle for overlay
+def generate_gradle(package):
+    return f'''apply plugin: \'com.android.application\'
 
 android {{
     compileSdkVersion 28
@@ -34,6 +33,3 @@ dependencies {{
     implementation fileTree(dir: \'libs\', include: [\'*.jar\'])
 }}
 '''
-
-    with open(path, "w") as gradle_file:
-        gradle_file.write(gradle)
