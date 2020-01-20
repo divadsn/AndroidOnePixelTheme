@@ -4,7 +4,7 @@ import json
 import shutil
 import subprocess
 from pprint import pprint
-from files import generate_manifest, generate_gradle
+from templates import generate_manifest, generate_gradle
 
 DEVNULL = open(os.devnull, "w")
 EXEC = ["bash", "gradlew", "app:assembleDebug"]
