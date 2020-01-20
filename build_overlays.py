@@ -11,7 +11,7 @@ EXEC = ["bash", "gradlew", "app:assembleDebug"]
 OUTPUT = "build/app/build/outputs/apk/debug/app-debug.apk"
 MANIFEST = "build/app/src/main/AndroidManifest.xml"
 GRADLE = "build/app/build.gradle"
-OVERLAY_DIR = "system/vendor/overlay/"
+OVERLAY_DIR = "system/vendor/overlay"
 PACKAGE_BASE = "com.android.theme."
 LABEL = "Pixel Theme "
 
@@ -54,10 +54,18 @@ for overlay_dir in overlays:
 
     print(f"Building overlay for {name} ({targetPackage})... ", end="")
 
-    # Copy overlay files and generate manifest
+    # Copy overlay files to build directory
     shutil.copytree(os.path.join(overlay_dir, "res"), "build/app/src/main/res")
-    generate_manifest(MANIFEST, package, targetPackage, label)
-    generate_gradle(GRADLE, package)
+    
+    # Generate AndroidManifest.xml
+    with open(MANIFEST, "w") as manifest_file:
+        manifest = generate_manifest(package, targetPackage, label)
+        manifest_file.write(manifest)
+    
+    # Generate build.gradle
+    with open(GRADLE, "w") as gradle_file:
+        gradle = generate_gradle(package)
+        gradle_file.write(gradle)
 
     # Build overlay and wait
     p = subprocess.Popen(EXEC, cwd="build", stdout=DEVNULL)
@@ -68,7 +76,7 @@ for overlay_dir in overlays:
         print("Failed!")
         exit(1)
     else:
-        shutil.copyfile(OUTPUT, OVERLAY_DIR + generate_filename(label))
+        shutil.copyfile(OUTPUT, os.path.join(OVERLAY_DIR, generate_filename(label)))
 
     print("Done!")
 
