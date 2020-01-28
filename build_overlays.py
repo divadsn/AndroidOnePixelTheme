@@ -7,13 +7,10 @@ from pprint import pprint
 from templates import generate_manifest, generate_gradle
 
 DEVNULL = open(os.devnull, "w")
-EXEC = ["bash", "gradlew", "app:assembleDebug"]
-OUTPUT = "build/app/build/outputs/apk/debug/app-debug.apk"
-MANIFEST = "build/app/src/main/AndroidManifest.xml"
-GRADLE = "build/app/build.gradle"
+OUTPUT_APK = "build/app/build/outputs/apk/debug/app-debug.apk"
+MANIFEST_FILE = "build/app/src/main/AndroidManifest.xml"
+GRADLE_FILE = "build/app/build.gradle"
 OVERLAY_DIR = "system/vendor/overlay"
-PACKAGE_BASE = "com.android.theme."
-LABEL = "Pixel Theme "
 
 
 def generate_filename(label):
@@ -49,8 +46,8 @@ for overlay_dir in overlays:
     overlay = overlays[overlay_dir]
     name = overlay["name"]
     targetPackage = overlay["targetPackage"]
-    package = PACKAGE_BASE + name.lower()
-    label = LABEL + name
+    package = "com.android.theme." + name.lower()
+    label = "Pixel Theme " + name
 
     print(f"Building overlay for {name} ({targetPackage})... ", end="")
 
@@ -58,17 +55,17 @@ for overlay_dir in overlays:
     shutil.copytree(os.path.join(overlay_dir, "res"), "build/app/src/main/res")
     
     # Generate AndroidManifest.xml
-    with open(MANIFEST, "w") as manifest_file:
+    with open(MANIFEST_FILE, "w") as manifest_file:
         manifest = generate_manifest(package, targetPackage, label)
         manifest_file.write(manifest)
     
     # Generate build.gradle
-    with open(GRADLE, "w") as gradle_file:
+    with open(GRADLE_FILE, "w") as gradle_file:
         gradle = generate_gradle(package)
         gradle_file.write(gradle)
 
-    # Build overlay and wait
-    p = subprocess.Popen(EXEC, cwd="build", stdout=DEVNULL)
+    # Build overlay and waitc
+    p = subprocess.Popen(["bash", "gradlew", "app:assembleDebug"], cwd="build", stdout=DEVNULL)
     p.wait()
 
     # Check exit code of gradle process
@@ -76,7 +73,7 @@ for overlay_dir in overlays:
         print("Failed!")
         exit(1)
     else:
-        shutil.copyfile(OUTPUT, os.path.join(OVERLAY_DIR, generate_filename(label)))
+        shutil.copyfile(OUTPUT_APK, os.path.join(OVERLAY_DIR, generate_filename(label)))
 
     print("Done!")
 
